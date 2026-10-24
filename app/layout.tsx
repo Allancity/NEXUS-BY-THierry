@@ -1,4 +1,5 @@
 import "./globals.css";
+import PolicyGate from "@/components/PolicyGate";
 
 export const metadata = {
   title: "NEXUS BY THierry",
@@ -12,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PolicyGate>{children}</PolicyGate>
+      </body>
     </html>
   );
 }

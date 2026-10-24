@@ -1,12 +1,36 @@
-import { Activity, AlertTriangle, ClipboardList, ShieldCheck, Users } from "lucide-react";
+"use client";
+
+import { Activity, AlertTriangle, ArrowDownRight, ClipboardList, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 
 const navItems = [
-  { href: "/dashboard", label: "Overview", icon: Activity, active: true },
-  { href: "/dashboard/inspections", label: "Inspections", icon: ClipboardList },
-  { href: "/dashboard/hazards", label: "Hazards", icon: AlertTriangle },
-  { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/dashboard/trainings", label: "Trainings", icon: ShieldCheck },
+  { href: "/dashboard#overview", label: "Overview", icon: Activity, active: true },
+  { href: "/dashboard#inspections", label: "Inspections", icon: ClipboardList },
+  { href: "/dashboard#hazards", label: "Hazards", icon: AlertTriangle },
+  { href: "/dashboard#users", label: "Users", icon: Users },
+  { href: "/dashboard#trainings", label: "Trainings", icon: ShieldCheck },
+];
+
+const stats = [
+  { label: "Incidents", value: "248", delta: "+12.4% vs last month", tone: "teal" },
+  { label: "Compliance", value: "94%", delta: "+3.1% stability", tone: "blue" },
+  { label: "Open hazards", value: "17", delta: "2 critical", tone: "amber" },
+  { label: "Response time", value: "2.4h", delta: "-18 min", tone: "rose" },
+];
+
+const performance = [
+  ["Jan", 62],
+  ["Feb", 58],
+  ["Mar", 75],
+  ["Apr", 82],
+  ["May", 88],
+  ["Jun", 94],
+];
+
+const alerts = [
+  { name: "Loose electrical outlet", status: "Critical" },
+  { name: "Warehouse spill", status: "Review" },
+  { name: "Fire drill overdue", status: "Pending" },
 ];
 
 export default function DashboardPage() {
@@ -18,71 +42,62 @@ export default function DashboardPage() {
             <div className="logo">N</div>
             <div>
               <strong>NEXUS</strong>
-              <div style={{ color: "#9aa9bd", fontSize: 12 }}>HSE platform</div>
+              <div className="sidebar-subtitle">HSE platform</div>
             </div>
           </div>
 
           <nav className="nav">
             {navItems.map(({ href, label, icon: Icon, active }) => (
-              <Link key={href} href={href} className={active ? "active" : ""}>
+              <Link key={href} href={href} className={active ? "nav-link active" : "nav-link"}>
                 <Icon size={18} />
                 {label}
               </Link>
             ))}
           </nav>
+
+          <div className="sidebar-footer">
+            <div className="mini-card">
+              <span>Risk score</span>
+              <strong>8.4 / 10</strong>
+            </div>
+          </div>
         </aside>
 
         <main className="main-panel">
           <header className="topbar">
             <div>
-              <p style={{ margin: 0, color: "#9aa9bd", fontSize: 12, textTransform: "uppercase", letterSpacing: 1.2 }}>
-                Operational dashboard
-              </p>
+              <p className="eyebrow-small">Operational dashboard</p>
               <h1>Executive overview</h1>
             </div>
 
-            <div className="user-pill">Thierry • Admin</div>
+            <div className="header-actions">
+              <button className="ghost-btn">Export</button>
+              <div className="user-pill">Thierry • Admin</div>
+            </div>
           </header>
 
-          <section className="stats-grid">
-            <article className="stat-card">
-              <div className="stat-label">Incidents</div>
-              <div className="stat-value">248</div>
-              <div className="trend">+12.4% vs last month</div>
-            </article>
-            <article className="stat-card">
-              <div className="stat-label">Compliance</div>
-              <div className="stat-value">94%</div>
-              <div className="trend">+3.1% stability</div>
-            </article>
-            <article className="stat-card">
-              <div className="stat-label">Open hazards</div>
-              <div className="stat-value">17</div>
-              <div className="trend">2 critical</div>
-            </article>
-            <article className="stat-card">
-              <div className="stat-label">Response time</div>
-              <div className="stat-value">2.4h</div>
-              <div className="trend">-18 min</div>
-            </article>
+          <section className="stats-grid" id="overview">
+            {stats.map((stat) => (
+              <article key={stat.label} className={`stat-card ${stat.tone}`}>
+                <div className="stat-label">{stat.label}</div>
+                <div className="stat-value">{stat.value}</div>
+                <div className="trend">
+                  <ArrowDownRight size={14} />
+                  {stat.delta}
+                </div>
+              </article>
+            ))}
           </section>
 
           <section className="content-grid">
-            <article className="panel-card">
+            <article className="panel-card" id="inspections">
               <div className="card-title">
                 <h3>Safety performance</h3>
-                <span style={{ color: "#9aa9bd", fontSize: 12 }}>Last 30 days</span>
+                <span className="panel-label">Last 30 days</span>
               </div>
 
               <div className="bar-chart">
-                {[
-                  ["Jan", 62],
-                  ["Feb", 58],
-                  ["Mar", 75],
-                  ["Apr", 82],
-                  ["May", 88],
-                  ["Jun", 94],
-                ].map(([month, value]) => (
+                {performance.map(([month, value]) => (
                   <div key={month} className="bar-row">
                     <span>{month}</span>
                     <div className="bar-track">
@@ -94,25 +109,58 @@ export default function DashboardPage() {
               </div>
             </article>
 
-            <article className="panel-card">
+            <article className="panel-card" id="hazards">
               <div className="card-title">
                 <h3>Alerts</h3>
-                <span style={{ color: "#9aa9bd", fontSize: 12 }}>Priority</span>
+                <span className="panel-label">Priority</span>
               </div>
 
               <div className="tiny-list">
-                <div className="tiny-item">
-                  <span>Loose electrical outlet</span>
-                  <span className="status-pill">Critical</span>
+                {alerts.map(({ name, status }) => (
+                  <div key={name} className="tiny-item">
+                    <span>{name}</span>
+                    <span className={`status-pill ${status.toLowerCase()}`}>{status}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </section>
+
+          <section className="bottom-grid">
+            <article className="panel-card" id="users">
+              <div className="card-title">
+                <h3>Team activity</h3>
+                <span className="panel-label">Today</span>
+              </div>
+
+              <div className="activity-list">
+                <div className="activity-item">
+                  <span className="dot dot-green" />
+                  Inspection completed on production floor
                 </div>
-                <div className="tiny-item">
-                  <span>Warehouse spill</span>
-                  <span className="status-pill">Review</span>
+                <div className="activity-item">
+                  <span className="dot dot-blue" />
+                  Training renewal requested for 3 employees
                 </div>
-                <div className="tiny-item">
-                  <span>Fire drill overdue</span>
-                  <span className="status-pill">Pending</span>
+                <div className="activity-item">
+                  <span className="dot dot-orange" />
+                  Hazard review scheduled for warehouse area
                 </div>
+              </div>
+            </article>
+
+            <article className="panel-card" id="trainings">
+              <div className="card-title">
+                <h3>Compliance status</h3>
+                <span className="panel-label">This week</span>
+              </div>
+
+              <div className="compliance-box">
+                <div>
+                  <strong>92%</strong>
+                  <span>Safety readiness</span>
+                </div>
+                <div className="ring-ring" />
               </div>
             </article>
           </section>
