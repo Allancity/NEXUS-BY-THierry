@@ -97,29 +97,20 @@ export default function HazardsPage() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "critical":
-        return "badge-danger"
-      case "high":
-        return "badge-warning"
-      case "medium":
-        return "badge-primary"
-      case "low":
-        return "badge-success"
-      default:
-        return "badge-primary"
+      case "critical": return "badge-danger"
+      case "high": return "badge-warning"
+      case "medium": return "badge-primary"
+      case "low": return "badge-success"
+      default: return "badge-primary"
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "open":
-        return "bg-danger/10 text-danger"
-      case "addressed":
-        return "bg-success/10 text-success"
-      case "monitoring":
-        return "bg-warning/10 text-warning"
-      default:
-        return "bg-slate-700/20 text-slate-300"
+      case "open": return "status-badge danger"
+      case "addressed": return "status-badge success"
+      case "monitoring": return "status-badge warning"
+      default: return "status-badge"
     }
   }
 
@@ -140,21 +131,18 @@ export default function HazardsPage() {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
-      reader.onloadend = () => {
-        setCameraImage(reader.result as string)
-      }
+      reader.onloadend = () => setCameraImage(reader.result as string)
       reader.readAsDataURL(file)
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Add new hazard
     const newHazard: Hazard = {
       id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      location: formData.location,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      location: formData.location.trim(),
       latitude: parseFloat(formData.latitude) || 0,
       longitude: parseFloat(formData.longitude) || 0,
       severity: formData.severity as any,
@@ -165,116 +153,46 @@ export default function HazardsPage() {
     }
     setHazards([newHazard, ...hazards])
     setShowForm(false)
-    setFormData({
-      title: "",
-      description: "",
-      location: "",
-      severity: "medium",
-      latitude: "",
-      longitude: "",
-    })
+    setFormData({ title: "", description: "", location: "", severity: "medium", latitude: "", longitude: "" })
     setCameraImage(null)
+    setUseGeolocation(false)
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex justify-between items-start">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Hazard Reports</h1>
-          <p className="text-slate-400">Report and track workplace hazards</p>
+          <p className="eyebrow-small">Operations</p>
+          <h1>Hazard reports</h1>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="btn btn-primary"
-        >
+        <button onClick={() => setShowForm(!showForm)} className="primary-btn small">
           <Plus className="w-5 h-5" />
-          Report Hazard
+          Report hazard
         </button>
       </div>
 
-      {/* Hazard Report Form */}
       {showForm && (
-        <div className="card-lg p-6 space-y-5">
-          <h3 className="text-xl font-semibold">Report New Hazard</h3>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Title *</label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                placeholder="Brief hazard description"
-                className="input"
-                required
-              />
+        <section className="panel-card form-card">
+          <h3>Report new hazard</h3>
+          <form onSubmit={handleSubmit} className="form-grid">
+            <div className="field-group">
+              <label>Title *</label>
+              <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Detailed description"
-                className="input resize-none h-24"
-              />
+            <div className="field-group wide">
+              <label>Description</label>
+              <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Location *
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                placeholder="Where is this hazard?"
-                className="input"
-                required
-              />
+            <div className="field-group">
+              <label>Location *</label>
+              <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required />
             </div>
 
-            {/* Geolocation */}
-            <div>
-              <button
-                type="button"
-                onClick={handleGetGeolocation}
-                className="btn btn-secondary text-sm"
-              >
-                <MapPin className="w-4 h-4" />
-                {useGeolocation ? "Location Captured" : "Capture Location"}
-              </button>
-              {useGeolocation && (
-                <p className="text-xs text-slate-400 mt-2">
-                  📍 {formData.latitude}, {formData.longitude}
-                </p>
-              )}
-            </div>
-
-            {/* Severity */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Severity *
-              </label>
-              <select
-                value={formData.severity}
-                onChange={(e) =>
-                  setFormData({ ...formData, severity: e.target.value })
-                }
-                className="input"
-              >
+            <div className="field-group">
+              <label>Severity</label>
+              <select value={formData.severity} onChange={(e) => setFormData({ ...formData, severity: e.target.value })}>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
@@ -282,182 +200,86 @@ export default function HazardsPage() {
               </select>
             </div>
 
-            {/* Photo Upload */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Attach Photo
-              </label>
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className="btn btn-secondary w-full"
-              >
-                <Camera className="w-5 h-5" />
-                {cameraImage ? "Photo Captured" : "Take Photo"}
+            <div className="field-group wide action-row">
+              <button type="button" className="secondary-btn" onClick={handleGetGeolocation}>
+                <MapPin className="w-4 h-4" />
+                {useGeolocation ? "Location captured" : "Capture location"}
               </button>
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoCapture}
-                className="hidden"
-                capture="environment"
-              />
-              {cameraImage && (
-                <div className="mt-3 relative">
-                  <img
-                    src={cameraImage}
-                    alt="Captured"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                </div>
-              )}
+              {useGeolocation && <span className="coordinate-text">{formData.latitude}, {formData.longitude}</span>}
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false)
-                  setFormData({
-                    title: "",
-                    description: "",
-                    location: "",
-                    severity: "medium",
-                    latitude: "",
-                    longitude: "",
-                  })
-                  setCameraImage(null)
-                }}
-                className="btn btn-secondary flex-1"
-              >
-                Cancel
+            <div className="field-group wide">
+              <label>Attach photo</label>
+              <button type="button" className="secondary-btn" onClick={() => cameraInputRef.current?.click()}>
+                <Camera className="w-4 h-4" />
+                {cameraImage ? "Photo captured" : "Take photo"}
               </button>
-              <button type="submit" className="btn btn-primary flex-1">
-                Submit Report
-              </button>
+              <input ref={cameraInputRef} type="file" accept="image/*" onChange={handlePhotoCapture} className="hidden" capture="environment" />
+              {cameraImage && <img src={cameraImage} alt="Hazard capture" className="uploaded-image" />}
+            </div>
+
+            <div className="button-row wide">
+              <button type="button" className="secondary-btn" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="submit" className="primary-btn">Submit report</button>
             </div>
           </form>
-        </div>
+        </section>
       )}
 
-      {/* Search and Filter */}
-      <div className="card-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Search</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search hazards..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-10"
-              />
-            </div>
+      <section className="panel-card toolbar-panel">
+        <div className="toolbar-grid">
+          <div className="search-box">
+            <Search className="search-icon" size={16} />
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search hazards..." />
           </div>
-
-          {/* Severity Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Severity</label>
-            <select
-              value={filterSeverity}
-              onChange={(e) => setFilterSeverity(e.target.value)}
-              className="input"
-            >
-              <option value="all">All Levels</option>
+          <div className="field-group compact">
+            <label>Severity</label>
+            <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)}>
+              <option value="all">All levels</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
               <option value="critical">Critical</option>
             </select>
           </div>
-
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="input"
-            >
-              <option value="all">All Status</option>
+          <div className="field-group compact">
+            <label>Status</label>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="all">All status</option>
               <option value="open">Open</option>
               <option value="addressed">Addressed</option>
               <option value="monitoring">Monitoring</option>
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Hazards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="card-grid hazard-grid">
         {filteredHazards.map((hazard) => (
-          <div key={hazard.id} className="card-lg overflow-hidden">
-            {/* Image */}
-            {hazard.image && (
-              <div className="h-40 bg-slate-700 overflow-hidden">
-                <img
-                  src={hazard.image}
-                  alt={hazard.title}
-                  className="w-full h-full object-cover"
-                />
+          <article key={hazard.id} className="panel-card hazard-card">
+            {hazard.image && <img src={hazard.image} alt={hazard.title} className="hazard-image" />}
+            <div className="hazard-body">
+              <div className="hazard-topline">
+                <h4>{hazard.title}</h4>
+                <span className={`badge ${getSeverityColor(hazard.severity)}`}>{hazard.severity}</span>
               </div>
-            )}
-
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-semibold text-lg flex-1">{hazard.title}</h3>
-                <span className={`badge ${getSeverityColor(hazard.severity)}`}>
-                  {hazard.severity.charAt(0).toUpperCase() +
-                    hazard.severity.slice(1)}
-                </span>
+              <p>{hazard.description}</p>
+              <div className="meta-row">
+                <MapPin size={14} />
+                <span>{hazard.location}</span>
               </div>
-
-              <p className="text-slate-400 text-sm mb-4">{hazard.description}</p>
-
-              {/* Location */}
-              <div className="flex items-start gap-2 mb-3 text-sm">
-                <MapPin className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">{hazard.location}</p>
-                  <p className="text-xs text-slate-500">
-                    📍 {hazard.latitude.toFixed(4)}, {hazard.longitude.toFixed(4)}
-                  </p>
-                </div>
+              <div className="meta-info">
+                <span>Reported by: <strong>{hazard.reportedBy}</strong></span>
+                <span>{hazard.reportedDate}</span>
               </div>
-
-              <div className="border-t border-slate-700 pt-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Reported by:</span>
-                  <span className="font-medium">{hazard.reportedBy}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Date:</span>
-                  <span className="font-medium">{hazard.reportedDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Status:</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(hazard.status)}`}>
-                    {hazard.status.charAt(0).toUpperCase() +
-                      hazard.status.slice(1)}
-                  </span>
-                </div>
+              <div className="status-line">
+                <span className={getStatusColor(hazard.status)}>{hazard.status}</span>
+                <span className="coords">{hazard.latitude.toFixed(4)}, {hazard.longitude.toFixed(4)}</span>
               </div>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
-
-      {filteredHazards.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-slate-400">No hazards found</p>
-        </div>
-      )}
+      </section>
     </div>
   )
 }

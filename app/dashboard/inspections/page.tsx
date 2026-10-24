@@ -12,7 +12,7 @@ interface Inspection {
   inspector: string
   status: "scheduled" | "in-progress" | "completed"
   findings: number
-  compliance: number // percentage
+  compliance: number
 }
 
 interface ChecklistItem {
@@ -22,50 +22,10 @@ interface ChecklistItem {
 }
 
 const mockInspections: Inspection[] = [
-  {
-    id: "1",
-    title: "Monthly Safety Audit - Production Floor",
-    type: "audit",
-    scheduledDate: "2024-06-15",
-    location: "Production Floor",
-    inspector: "Sarah Johnson",
-    status: "completed",
-    findings: 3,
-    compliance: 92,
-  },
-  {
-    id: "2",
-    title: "Quarterly Fire Safety Inspection",
-    type: "inspection",
-    scheduledDate: "2024-06-20",
-    location: "Building A",
-    inspector: "Mike Davis",
-    status: "scheduled",
-    findings: 0,
-    compliance: 0,
-  },
-  {
-    id: "3",
-    title: "Equipment Safety Assessment",
-    type: "assessment",
-    scheduledDate: "2024-06-10",
-    location: "Warehouse",
-    inspector: "Emma Wilson",
-    status: "in-progress",
-    findings: 2,
-    compliance: 85,
-  },
-  {
-    id: "4",
-    title: "Environmental Compliance Check",
-    type: "audit",
-    scheduledDate: "2024-06-05",
-    location: "All Areas",
-    inspector: "John Smith",
-    status: "completed",
-    findings: 1,
-    compliance: 95,
-  },
+  { id: "1", title: "Monthly Safety Audit - Production Floor", type: "audit", scheduledDate: "2024-06-15", location: "Production Floor", inspector: "Sarah Johnson", status: "completed", findings: 3, compliance: 92 },
+  { id: "2", title: "Quarterly Fire Safety Inspection", type: "inspection", scheduledDate: "2024-06-20", location: "Building A", inspector: "Mike Davis", status: "scheduled", findings: 0, compliance: 0 },
+  { id: "3", title: "Equipment Safety Assessment", type: "assessment", scheduledDate: "2024-06-10", location: "Warehouse", inspector: "Emma Wilson", status: "in-progress", findings: 2, compliance: 85 },
+  { id: "4", title: "Environmental Compliance Check", type: "audit", scheduledDate: "2024-06-05", location: "All Areas", inspector: "John Smith", status: "completed", findings: 1, compliance: 95 },
 ]
 
 const defaultChecklist: ChecklistItem[] = [
@@ -81,276 +41,138 @@ const defaultChecklist: ChecklistItem[] = [
 
 export default function InspectionsPage() {
   const [inspections, setInspections] = useState<Inspection[]>(mockInspections)
-  const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(
-    null
-  )
+  const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null)
   const [checklist, setChecklist] = useState<ChecklistItem[]>(defaultChecklist)
   const [showChecklistModal, setShowChecklistModal] = useState(false)
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "audit":
-        return "bg-primary-600/20 text-primary-400"
-      case "inspection":
-        return "bg-warning/20 text-warning"
-      case "assessment":
-        return "bg-success/20 text-success"
-      default:
-        return "bg-slate-700/20 text-slate-300"
+      case "audit": return "badge primary"
+      case "inspection": return "badge warning"
+      case "assessment": return "badge success"
+      default: return "badge"
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "scheduled":
-        return "bg-slate-700/30 text-slate-300"
-      case "in-progress":
-        return "bg-warning/10 text-warning"
-      case "completed":
-        return "bg-success/10 text-success"
-      default:
-        return "bg-slate-700/20 text-slate-300"
+      case "scheduled": return "status-badge"
+      case "in-progress": return "status-badge warning"
+      case "completed": return "status-badge success"
+      default: return "status-badge"
     }
   }
 
-  const toggleChecklistItem = (id: string) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
-    )
-  }
-
+  const toggleChecklistItem = (id: string) => setChecklist((prev) => prev.map((item) => item.id === id ? { ...item, completed: !item.completed } : item))
   const completedItems = checklist.filter((item) => item.completed).length
   const completionPercentage = Math.round((completedItems / checklist.length) * 100)
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex justify-between items-start">
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Inspections & Audits
-          </h1>
-          <p className="text-slate-400">Schedule and manage safety audits</p>
+          <p className="eyebrow-small">Audit</p>
+          <h1>Inspections & audits</h1>
         </div>
-        <button className="btn btn-primary">
+        <button className="primary-btn small">
           <Plus className="w-5 h-5" />
-          Schedule Inspection
+          Schedule inspection
         </button>
       </div>
 
-      {/* Calendar Overview */}
-      <div className="card-lg p-6">
-        <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-          <Calendar className="w-6 h-6" />
-          Upcoming Inspections
-        </h3>
+      <section className="panel-card">
+        <div className="section-heading">
+          <Calendar size={18} />
+          <h3>Upcoming inspections</h3>
+        </div>
 
-        <div className="space-y-3">
-          {inspections
-            .filter((i) => i.status !== "completed")
-            .sort(
-              (a, b) =>
-                new Date(a.scheduledDate).getTime() -
-                new Date(b.scheduledDate).getTime()
-            )
-            .map((inspection) => (
-              <div
-                key={inspection.id}
-                className="flex items-center justify-between p-4 border border-slate-700 rounded-lg hover:bg-slate-700/20 transition-colors cursor-pointer"
-                onClick={() => {
-                  setSelectedInspection(inspection)
-                  setShowChecklistModal(true)
-                }}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold">{inspection.title}</h4>
-                    <span className={`px-2 py-1 rounded text-xs ${getTypeColor(inspection.type)}`}>
-                      {inspection.type.charAt(0).toUpperCase() +
-                        inspection.type.slice(1)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-400">
-                    📍 {inspection.location} • Inspector: {inspection.inspector}
-                  </p>
+        <div className="list-stack">
+          {inspections.filter((i) => i.status !== "completed").sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()).map((inspection) => (
+            <div key={inspection.id} className="list-row" onClick={() => { setSelectedInspection(inspection); setShowChecklistModal(true) }}>
+              <div>
+                <div className="row-head">
+                  <strong>{inspection.title}</strong>
+                  <span className={getTypeColor(inspection.type)}>{inspection.type}</span>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-300">
-                    {new Date(inspection.scheduledDate).toLocaleDateString()}
-                  </p>
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      inspection.status
-                    )}`}
-                  >
-                    {inspection.status.charAt(0).toUpperCase() +
-                      inspection.status.slice(1)}
-                  </span>
-                </div>
+                <small>{inspection.location} • Inspector: {inspection.inspector}</small>
               </div>
-            ))}
+              <div className="row-meta">
+                <span>{new Date(inspection.scheduledDate).toLocaleDateString()}</span>
+                <span className={getStatusColor(inspection.status)}>{inspection.status}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Inspections Table */}
-      <div className="card-lg overflow-hidden">
-        <div className="p-6 border-b border-slate-700">
-          <h3 className="text-xl font-semibold">All Inspections</h3>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-700/50 border-b border-slate-600">
+      <section className="panel-card table-panel">
+        <div className="table-wrap">
+          <table>
+            <thead>
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Title</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Location</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Compliance</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Compliance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700">
+            <tbody>
               {inspections.map((inspection) => (
-                <tr
-                  key={inspection.id}
-                  className="hover:bg-slate-700/30 transition-colors cursor-pointer"
-                  onClick={() => {
-                    setSelectedInspection(inspection)
-                    setShowChecklistModal(true)
-                  }}
-                >
-                  <td className="px-6 py-4 font-medium">{inspection.title}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs ${getTypeColor(inspection.type)}`}>
-                      {inspection.type.charAt(0).toUpperCase() +
-                        inspection.type.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-300">{inspection.location}</td>
-                  <td className="px-6 py-4 text-slate-300">
-                    {new Date(inspection.scheduledDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        inspection.status
-                      )}`}
-                    >
-                      {inspection.status.charAt(0).toUpperCase() +
-                        inspection.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
+                <tr key={inspection.id} onClick={() => { setSelectedInspection(inspection); setShowChecklistModal(true) }}>
+                  <td>{inspection.title}</td>
+                  <td><span className={getTypeColor(inspection.type)}>{inspection.type}</span></td>
+                  <td>{inspection.location}</td>
+                  <td>{new Date(inspection.scheduledDate).toLocaleDateString()}</td>
+                  <td><span className={getStatusColor(inspection.status)}>{inspection.status}</span></td>
+                  <td>
                     {inspection.compliance > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              inspection.compliance >= 90
-                                ? "bg-success"
-                                : inspection.compliance >= 80
-                                  ? "bg-warning"
-                                  : "bg-danger"
-                            }`}
-                            style={{ width: `${inspection.compliance}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-semibold min-w-[40px]">
-                          {inspection.compliance}%
-                        </span>
+                      <div className="compliance-inline">
+                        <div className="mini-bar"><div className="mini-fill" style={{ width: `${inspection.compliance}%` }} /></div>
+                        <span>{inspection.compliance}%</span>
                       </div>
-                    ) : (
-                      <span className="text-slate-500">-</span>
-                    )}
+                    ) : <span className="muted-text">-</span>}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      {/* Checklist Modal */}
       {showChecklistModal && selectedInspection && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="card-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex justify-between items-start p-6 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+        <div className="modal-backdrop" onClick={() => setShowChecklistModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {selectedInspection.title}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {selectedInspection.location} • {selectedInspection.inspector}
-                </p>
+                <h2>{selectedInspection.title}</h2>
+                <p>{selectedInspection.location} • {selectedInspection.inspector}</p>
               </div>
-              <button
-                onClick={() => setShowChecklistModal(false)}
-                className="text-2xl text-slate-400 hover:text-white"
-              >
-                ×
-              </button>
+              <button className="close-btn" onClick={() => setShowChecklistModal(false)}>×</button>
             </div>
 
-            {/* Progress */}
-            <div className="p-6 border-b border-slate-700">
-              <div className="mb-2 flex justify-between">
-                <span className="text-sm font-medium">Checklist Progress</span>
-                <span className="text-sm font-semibold">{completionPercentage}%</span>
+            <div className="progress-wrap">
+              <div className="progress-head">
+                <span>Checklist progress</span>
+                <strong>{completionPercentage}%</strong>
               </div>
-              <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary-500 transition-all duration-300 rounded-full"
-                  style={{ width: `${completionPercentage}%` }}
-                ></div>
-              </div>
+              <div className="progress-bar"><div className="progress-fill" style={{ width: `${completionPercentage}%` }} /></div>
             </div>
 
-            {/* Checklist Items */}
-            <div className="p-6 space-y-3">
+            <div className="checklist-list">
               {checklist.map((item) => (
-                <label
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 border border-slate-700 rounded-lg hover:bg-slate-700/30 transition-colors cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    onChange={() => toggleChecklistItem(item.id)}
-                    className="w-5 h-5 rounded cursor-pointer accent-primary-500"
-                  />
-                  <span
-                    className={`flex-1 ${
-                      item.completed
-                        ? "line-through text-slate-500"
-                        : "text-slate-200"
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                  {item.completed && (
-                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
-                  )}
+                <label key={item.id} className="check-item">
+                  <input type="checkbox" checked={item.completed} onChange={() => toggleChecklistItem(item.id)} />
+                  <span className={item.completed ? "checked-label" : ""}>{item.label}</span>
+                  {item.completed && <CheckCircle2 size={18} className="check-icon" />}
                 </label>
               ))}
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-3 p-6 border-t border-slate-700">
-              <button
-                onClick={() => setShowChecklistModal(false)}
-                className="btn btn-secondary flex-1"
-              >
-                Close
-              </button>
-              {selectedInspection.status === "in-progress" && (
-                <button className="btn btn-primary flex-1">
-                  Mark as Complete
-                </button>
-              )}
+            <div className="button-row">
+              <button type="button" className="secondary-btn" onClick={() => setShowChecklistModal(false)}>Close</button>
+              {selectedInspection.status === "in-progress" && <button type="button" className="primary-btn">Mark as complete</button>}
             </div>
           </div>
         </div>
